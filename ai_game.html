@@ -62,7 +62,259 @@
             <h3>
                 AI Crow Guide
             </h3>
-    
+
+            <p>
+                Currently AI is one of the mroe perplexing topics of game development. While I understand 
+                the cocnepts presented within the course. Application of those concepts gets a bit wild 
+                especially in Unreal Engine. The movement of a normal skeletal mesh through an AI controller
+                utilizing target points and a for loop that returns the next target point was simple enough. 
+                However, when I tried to apply that logic to a crow skeletal mesh I was able to find on the 
+                marketplace. I ran into trouble with getting the controller to actually control the pawn.
+            </p>
+
+            <p id="nobot_padding">StorytellerCrowAIController.h</p>
+            <div class="codebox">
+                #pragma once<br>
+                <br>
+                #include "CoreMinimal.h"<br>
+                #include "AIController.h"<br>
+                #include "Runtime/Engine/Classes/Engine/TargetPoint.h"<br>
+                #include "StorytellerCrowAIController.generated.h"<br>
+                <br>
+                UCLASS()<br>
+                class JAMESSTIMAC_API AStorytellerCrowAIController : public AAIController<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GENERATED_BODY()<br>
+                <br>
+                public:<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Called when the game starts or when spawned<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void BeginPlay() override;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Called every frame<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void Tick(float DeltaTime) override;<br>
+                <br>
+                    
+                private:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// bools for waypoints<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool bCanMoveToWPOne;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool bCanMoveToWPTwo;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool bReturnedToStart;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool bHasNotMovedYet;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Array of waypoints set within world<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray<AActor*> Waypoints;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AActor* OurCurrentWaypoint;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATargetPoint* OurNextWaypoint;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATargetPoint* ReturnedTargetPoint;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Get the next waypoint for AI movement<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UFUNCTION()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATargetPoint* GetNextWaypoint(AActor* CurrentWaypoint);<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Move AI to next waypoint<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UFUNCTION()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;void GoToNextWaypoint(ATargetPoint* NextWaypoint);<br>
+                <br>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//// Tester functions to get random waypoint <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//UFUNCTION()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;ATargetPoint* GetRandomWaypoint();<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//// Terster function to move to random waypoint<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//UFUNCTION()<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;void GoToRandomWaypoint();<br>
+                <br>
+
+                };
+
+            </div>
+
+            <p id="nobot_padding">StorytellerCrowAIController.cpp</p>
+            <div class="codebox">
+                #include "StorytellerCrowAIController.h"<br>
+                #include "Kismet/GameplayStatics.h"<br>
+                #include "JamesStimacCharacter.h"<br>
+                <br>
+
+                /* base FVectors for character location checks*/<br>
+                // If player moves past x value of post move to waypoint 1<br>
+                const float MoveAICheck1X = 1105.f;<br>
+                <br>
+                // to move from waypoint 1 to 2 check if player has moved past these locations<br>
+                <br>
+                const float MoveAICheck2X = -300.f;<br>
+                const float MoveAICheck2Y = 2000.f;<br>
+                <br>
+
+
+                void AStorytellerCrowAIController::BeginPlay()<br>
+                {<br>
+                    Super::BeginPlay();<br>
+                    <br>
+                    // if world != nullptr<br>
+                    if (GetWorld())<br>
+                    {<br>
+                        <br>
+                        // get all waypoints<br>
+                        UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATargetPoint::StaticClass(), Waypoints);<br>
+                        uint8 totalWaypoints = 0;<br>
+                        for (auto waypoint : Waypoints)<br>
+                        {<br>
+                            totalWaypoints++;<br>
+                            GEngine->AddOnScreenDebugMessage(totalWaypoints+5, 5.f, FColor::Green, FString::Printf(TEXT("Waypoints = %.2f x %.2f y %.2f z"), waypoint->GetActorLocation().X, waypoint->GetActorLocation().Y, waypoint->GetActorLocation().Z));<br>
+                        }<br>
+                        GEngine->AddOnScreenDebugMessage(4, 5.f, FColor::Yellow, FString::Printf(TEXT("Total waypoints %i"), totalWaypoints));<br>
+                    }<br>
+                    <br>
+                    // set bools for movement checks<br>
+                    bHasNotMovedYet = true;<br>
+                    bCanMoveToWPOne = true;<br>
+                    bCanMoveToWPTwo = true;<br>
+                    bReturnedToStart = false;<br>
+                    <br>
+
+                    OurCurrentWaypoint = Waypoints[0];<br>
+                    GoToNextWaypoint(GetNextWaypoint(OurCurrentWaypoint));<br>
+                    // GoToRandomWaypoint();<br>
+                }<br>
+                <br>
+
+                void AStorytellerCrowAIController::Tick(float DeltaTime)<br>
+                {<br>
+                    Super::Tick(DeltaTime);<br>
+                    <br>
+                    // if Character X and/or Y values are "past" AI movement checks, try to move to next waypoint<br>
+                    if (GetWorld()->GetFirstPlayerController()->GetPawn())<br>
+                    {<br>
+                        FVector MyCharacterLocation = (GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());<br>
+                        GEngine->AddOnScreenDebugMessage(3, 5.f, FColor::Yellow, FString::Printf(TEXT("current actor location %.2f x %.2f y %.2f z"), MyCharacterLocation.X, MyCharacterLocation.Y, MyCharacterLocation.Z));<br>
+                        if (bCanMoveToWPOne || bCanMoveToWPTwo) {<br>
+                            <br>
+                            if ((MyCharacterLocation.X - MoveAICheck1X) <= 0.001f)<br>
+                            {<br>
+                                GoToNextWaypoint(GetNextWaypoint(OurCurrentWaypoint));<br>
+                                <br>
+                            }<br>
+                            // if Character X & Y values are "past" AI movement check for waypoint 2
+                            else if (((MyCharacterLocation.X - MoveAICheck2X) <= 0.001f) && ((MyCharacterLocation.Y - MoveAICheck2Y) <= 0.001f))<br>
+                            {<br>
+                                GoToNextWaypoint(GetNextWaypoint(OurCurrentWaypoint));<br>
+                                <br>
+                            }<br>
+                        }<br>
+                        // FIXME:: will call immediately once both bools are set, need a sort of timer or some action to happen in between<br>
+                        else if (!bReturnedToStart)<br>
+                        {<br>
+                            GoToNextWaypoint(GetNextWaypoint(OurCurrentWaypoint));<br>
+                            <br>
+                        }<br>
+                    }<br>
+                    <br>
+                }<br>
+                <br>
+                // Get the next waypoint for AI movement if player moves to new location<br>
+                // Uses OurCurrentWaypoint a protected global variable<br>
+                // sets global bools to iterate array properly<br>
+                ATargetPoint* AStorytellerCrowAIController::GetNextWaypoint(AActor* CurrentWaypoint)<br>
+                {<br>
+                    // index used to assure for loop does not go out of bounds<br>
+                    uint8 index = 0;<br>
+                    <br>
+
+                    // loop over each waypoint<br>
+                    for (auto waypoint : Waypoints)<br>
+                    {<br>
+                        // if waypoint is not nullptr or index is less than three<br>
+                        if (waypoint && index <=2 && !bHasNotMovedYet)<br>
+                        {<br>
+                            // return index 1 waypoint if have not moved there and are not at that waypoint<br>
+                            if ((waypoint != CurrentWaypoint) && (index == 1) && (bCanMoveToWPOne))<br>
+                            {<br>
+                                // set so cannot return to waypoint 1<br>
+                                bCanMoveToWPOne = false;<br>
+                                OurCurrentWaypoint = Waypoints[1];<br>
+                                <br>
+                                // set next waypoint [[index 1]]<br>
+                                ReturnedTargetPoint = Cast<ATargetPoint>(Waypoints[index]);<br>
+                                GEngine->AddOnScreenDebugMessage(10, 5.f, FColor::Red, FString::Printf(TEXT("Moving to waypoint 2")));<br>
+                                break;<br>
+                                <br>
+                            }<br>
+                            // return index 2 waypoint if have not moved there and are not at that waypoint <br>
+                            if ((waypoint != CurrentWaypoint) && (index == 2) && (bCanMoveToWPTwo))<br>
+                            {<br>
+                                // set so cannot return to waypoint 2<br>
+                                bCanMoveToWPTwo = false;<br>
+                                OurCurrentWaypoint = Waypoints[2];<br>
+                                <br>
+                                // set next waypoint [[index 2]]<br>
+                                ReturnedTargetPoint = Cast<ATargetPoint>(Waypoints[index]);<br>
+                                GEngine->AddOnScreenDebugMessage(11, 5.f, FColor::Red, FString::Printf(TEXT("Moving to waypoint 3")));<br>
+                                break;<br>
+                            }<br>
+
+                            index++;<br>
+                        } <br>
+                        else<br>
+                        {<br>
+                            // set returned to start as true so that we leave do while loop<br>
+                            if (bHasNotMovedYet) <br>
+                            {<br>
+                                bHasNotMovedYet = false;<br>
+                            }<br>
+                            else<br>
+                            {<br>
+                                bReturnedToStart = true;<br>
+                            }<br>
+                            <br>
+                            OurCurrentWaypoint = Waypoints[0];<br>
+                            <br>
+                            // set first waypoint if no other waypoints exist of if crow hasn't moved yet<br>
+                            ReturnedTargetPoint = Cast<ATargetPoint>(Waypoints[0]);<br>
+                            GEngine->AddOnScreenDebugMessage(2, 5.f, FColor::Red, FString::Printf(TEXT("Moving to waypoint 1")));<br>
+                            break;<br>
+                            <br>
+                        }// end nested nullptr check if<br>
+                        <br>
+                    } // end for loop<br>
+                    <br>
+                    // return next waypoint target<br>
+                    return ReturnedTargetPoint;<br>
+                    <br>
+                }<br>
+                <br>
+                // Move AI to next waypoint<br>
+                void AStorytellerCrowAIController::GoToNextWaypoint(ATargetPoint* NextWaypoint)<br>
+                {<br>
+                    // move actor to next location<br>
+                    MoveToActor(NextWaypoint);<br>
+                }<br>
+                <br>
+                //ATargetPoint* AStorytellerCrowAIController::GetRandomWaypoint()<br>
+                //{<br>
+                //	auto index = FMath::RandRange(0, Waypoints.Num() - 1);<br>
+                //	return Cast<ATargetPoint>(Waypoints[index]);<br>
+                //}<br>
+                //<br>
+                //void AStorytellerCrowAIController::GoToRandomWaypoint()<br>
+                //{<br>
+                //	MoveToActor(GetRandomWaypoint());<br>
+                //}<br>
+                <br>
+            </div>
+            <video controls>
+                <source src="media/ai/AICrowNotWorkingGameplay.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>    
+
         </section>
 
         <footer>
