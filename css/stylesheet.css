@@ -88,6 +88,24 @@
 }
 
 /* style IDs */
+#inline_p {
+    width: 80%;
+    height: auto;
+    display: inline-flex;
+    flex-direction: row;
+    vertical-align: top;
+
+    padding-top: 0;
+}
+
+#img_inline_L {
+    width: 15%;
+    display: inline-flex;
+    flex-direction: row;
+    vertical-align: text-bottom;
+    
+    padding-top: 20px;
+}
 
 /* classes */
 * {
@@ -111,6 +129,16 @@
     color: var(--navy_blue);
 }
 
+.codebox {
+    overflow: auto;
+    width: 75%;
+    height: 30vh;
+
+    border: 4px solid var(--coffee_pot);
+    padding: 4px;
+    margin-top: 10px;
+    background-color: var(--rose_quartz);
+}
 /* html element styles*/
 
 html {
@@ -161,7 +189,7 @@ section {
     color: var(--coffee_pot);
     padding: 14px 16px;
     padding-bottom: 100px;
-    background: linear-gradient(to top, var(--cool_grey), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--cool_grey));
+    background: linear-gradient(to top, var(--cool_grey), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--purple_haze), var(--cool_grey));
     min-height: 100vh;
 
     display: flex;
@@ -186,7 +214,7 @@ footer {
 
 p {
     padding-top: 10px;
-    padding-left: 5px;
+    padding-left: 10px;
     padding-right: 10px;
 
     line-height: 1.75;
@@ -196,8 +224,21 @@ p {
     font-size: 20px;
 
 }
-/* headers */
 
+
+/* media and images */
+img {
+    width: 50%;
+    height: auto;
+}
+
+video {
+    width: 75%;
+    height: auto;
+    display: flex;
+}
+
+/* headers */
 h3 {
     color: var(--rose_quartz);
 
@@ -207,6 +248,14 @@ h3 {
     font-size: 25px;
 }
 
+h4 {
+    font-size: 400px;
+    font-style: italic;
+
+    font-size: 18px;
+    padding-bottom: 4px;
+    margin-bottom: 4px;
+}
 
 /* media queries */
 
@@ -215,6 +264,10 @@ h3 {
     .navbar a {
         padding: 5px 5px;
         font-size: 18px;
+    }
+
+    .div_inline {
+        flex-direction: column;
     }
 
     header {
@@ -234,5 +287,16 @@ h3 {
 
     p{
         font-size: 18px;
+    }
+
+    video {
+        width: 75%;
+        height: auto;
+
+        flex-direction: column;
+    }
+
+    .codebox {
+        font-size: 10px;
     }
 }
