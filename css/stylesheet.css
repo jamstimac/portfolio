@@ -88,6 +88,12 @@
 }
 
 /* style IDs */
+#nobot_padding {
+    padding-bottom:0;
+    margin-bottom:0;
+
+    font-weight: 700px;
+}
 #inline_p {
     width: 80%;
     height: auto;
@@ -107,6 +113,14 @@
     padding-top: 20px;
 }
 
+#img_vertical {
+    width: 75%;
+    height: auto;
+    display: felx;
+
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
 /* classes */
 * {
     box-sizing: border-box;
