@@ -59,10 +59,199 @@
         </nav>
         
         <section>
-            <h3>
+            <h3 id="h3_moreBotPadding">
                 Terrain Generation
             </h3>
-    
+            <p>
+                Over the course of my final year at SNHU, I was able to create a prototype of a potion game 
+                found in the portfolio displaying the <a href="ai_game.html">AI</a> artifact as well as develope
+                a plan for a more finalized version of the game including terrain generation and a more in-depth
+                potion system. The plan resulted in a <a href="https://www.dropbox.com/scl/fo/tum25sw2gemsuh01pf3yc/AC5J4dG37OBxFjN5i6AK1jI?rlkey=za2n6ma2owfzsl20pm8evzfpr&st=eqff89de&dl=0" alt="link to dropbox for proof of concept">proof of concept</a>
+                paper and article as well as an idea of a gameplay system I wanted to integrate into the potion making
+                game. The backbone for this system was terrain generation. I was able to create a prototype terrain using
+                triangle math and shaders, and plan to create rogue-like paths that the player will go down to collect 
+                the randomly generated resources for the game.
+            </p>
+            <p>
+                The proof of concept also details more alterations to the game including a potion making system and 
+                the potential for enemies along the paths. While it still needs work the base code functions. To further
+                I will utilize DirectX or Vulkan shaders instead of simply the engine based shaders. The concept for procedurally
+                generated terrain came up in a course following the course where the potion making game cocnept was orignally 
+                conceived, so this artifact was able to be seperated from the faulty AI logic.
+            </p>
+
+            <p id="nobot_padding">
+                Blueprint generated from C++ class
+            </p>
+            <img src="media/terrain/Generated blueprint from the c++ clas.jpg" id="img_vertical" alt="Blueprint generated from C++ class.">
+
+            <p id="nobot_padding">
+                TerrainGenerator.h
+            </p>
+            <div class="codebox">
+                #pragma once<br>
+                <br>
+                #include "CoreMinimal.h"<br>
+                #include "GameFramework/Actor.h"<br>
+                #include "ProceduralMeshComponent.h"<br>
+                #include "Materials/MaterialInterface.h"<br>
+                #include "TerrainGenerator.generated.h"<br>
+                <br>
+                UCLASS()<br>
+                class IMPACTRAINBOW_STIMAC_API ATerrainGenerator : public AActor<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GENERATED_BODY()<br>
+                <br>
+                public:	<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Sets default values for this actor's properties<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ATerrainGenerator();<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY(EditAnywhere, Meta = (ClampMin = 0))<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int XSize = 0; // Number of squares along the x axis<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY(EditAnywhere, Meta = (ClampMin = 0))<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int YSize = 0; // Number of squares along the y axis<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY(EditAnywhere, Meta = (ClampMin = 0.000001))<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;float Scale = 0.f;// Used to set vertex and <br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY(EditAnywhere, Meta = (ClampMin = 0.000001))<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;float UVScale = 0.f; // Used to set UVs<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/// for debugging ///<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//PostActorCreated calls the CreateSquare function when the actor is spawned into the world.<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// virtual void PostActorCreated() override;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// PostLoad is a cleanup function that is called directly after the actor is loaded.<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// virtual void PostLoad() override;<br>
+                <br>
+                protected:<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Called when the game starts or when spawned<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// uses begin play instead of Post Load Post Actor Created since it will be generated at begin or tick<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void BeginPlay() override;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UPROPERTY(EditAnywhere)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UMaterialInterface* Material;<br>
+
+                <br>
+                public:	<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Called every frame<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void Tick(float DeltaTime) override;<br>
+                <br>
+
+                private: <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UProceduralMeshComponent* mesh;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FVector> Vertices;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FVector> Normals;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FVector> Normals;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;int> Triangles;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FVector> Normals;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FProcMeshTangent> Tangents;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FVector2D> UV0;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TArray&#60;FColor> Colors;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void CreateVertices();<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;virtual void CreateTriangles();<br>
+                };<br>
+
+
+            </div>
+
+            <p id="nobot_padding">
+                TerrainGenerator.cpp
+            </p>
+            <div class="codebox">
+                #include "TerrainGenerator.h"<br>
+                #include "DrawDebugHelpers.h"<br>
+                <br>
+                // Sets default values<br>
+                ATerrainGenerator::ATerrainGenerator()<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PrimaryActorTick.bCanEverTick = true;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// instantiate root component as Procedural mesh<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mesh = CreateDefaultSubobject&#60;UProceduralMeshComponent>("GeneratedMesh");<br>
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mesh->SetupAttachment(GetRootComponent());<br>
+                <br>
+                }<br>
+                <br>
+
+                // Called when the game starts or when spawned<br>
+                void ATerrainGenerator::BeginPlay()<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Super::BeginPlay();<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// generate vertices (UVs, colors) and triangles<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CreateVertices();<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CreateTriangles();<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Draw triangles to create plane terrain<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mesh->CreateMeshSection(0, Vertices, Triangles, Normals, UV0, Colors, Tangents, true);<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mesh->SetMaterial(0, Material);<br>
+                <br>
+                }<br>
+                <br>
+                // Called every frame<br>
+                void ATerrainGenerator::Tick(float DeltaTime)
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Super::Tick(DeltaTime);<br>
+                <br>
+                }<br>
+                <br>
+                // number of vertices depends on grid size<br>
+                void ATerrainGenerator::CreateVertices()<br>
+                {<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int X = 0; X &#60;= XSize; ++X)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int Y = 0; Y &#60;= YSize; ++Y)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertices.Add(FVector(X * Scale, Y * Scale, 0));<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UV0.Add(FVector2D(X * UVScale, Y * UVScale));<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Colors.Add(FColor::Red);<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Debug<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// DrawDebugSphere(GetWorld(), FVector(X * Scale, Y * Scale, 0), 25.f, 16, FColor::Red, true);<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                <br>
+                }<br>
+                <br>
+                // Generates triangles for terrain<br>
+                // FIXME: Not generating triangles<br>
+                void ATerrainGenerator::CreateTriangles()<br>
+                {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int Vertex = 0;<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// uses less operator to not create unusable triangles to or past 3<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int X = 0; X &#60; XSize; ++X)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (int Y = 0; Y &#60; YSize; ++Y)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//Bottom Left Triangle<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex);//BLC<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex + 1);//BRC<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex + YSize + 1);//TLC //YSize offsets the direction that the vertices spawn, 1 through YSize will the first row<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//Top Right Triangle<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex + 1);//BRC<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex + YSize + 2);//TRC<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Triangles.Add(Vertex + YSize + 1);//TLC<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex++;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Vertex++;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                }<br>
+            </div>
+
+            <p id="nobot_padding">
+                Generated Terrain on play
+            </p>
+            <img src="media/terrain/LoadedTerrain.jpg" id="img_vertical" alt="Generated Terrain on play.">
         </section>
 
         <footer>

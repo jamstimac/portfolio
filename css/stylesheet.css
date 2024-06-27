@@ -121,6 +121,10 @@
     padding-top: 10px;
     padding-bottom: 10px;
 }
+
+#h3_moreBotPadding {
+    padding-bottom: 20px;
+}
 /* classes */
 * {
     box-sizing: border-box;
@@ -240,6 +244,13 @@ p {
 
 }
 
+p a {
+    color: var(--pink);
+}
+
+p a:hover {
+    color: var(--rose_quartz);
+}
 
 /* media and images */
 img {
@@ -261,6 +272,8 @@ h3 {
     font-style: italic;
 
     font-size: 25px;
+
+    padding-top: 20px;
 }
 
 
