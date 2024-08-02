@@ -104,7 +104,6 @@
     padding-top: 0;
 }
 
-
 #img_inline_L {
     width: 15%;
     display: inline-flex;
@@ -126,6 +125,12 @@
 #h3_moreBotPadding {
     padding-bottom: 20px;
 }
+
+#a_inline {
+    padding-left:0;
+    padding-right:0;
+}
+
 /* classes */
 * {
     box-sizing: border-box;
