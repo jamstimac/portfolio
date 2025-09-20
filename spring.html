@@ -35,23 +35,43 @@
 
         </header>
 
-        <nav class="navbar">
+        <nav>
             <!-- links to index.html (left blank on page)-->
-            <a href="index.html">
-                HOME
-            </a>
-
-            <a href="back_end_nav.html">
-                Other Projects
-            </a>
+            <div class="navbar">
+                <a href="index.html">
+                    HOME
+                </a>
+            </div>
 
 
-            <a href="https://github.com/jamstimac" title="Respository website for James Stimac" onclick='window.open("https://github.com/jamstimac");return false;'>
+            <div class="dropdown">
+                <button class="dropbtn">Projects</button>
+                <div class="dropdown-content">
+                    <a class="active">Spring MVC</a>
+                    <a href="javalin.html">Javalin</a>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="dropbtn">Coursework</button>
+                <div class="dropdown-content">
+                    <a href="py_game.html">Python Text</a>
+                    <a href="ai_game.html">Unreal AI</a>
+                    <a href="hud_game.html">Unreal HUD</a>
+                    <a href="terrain_game.html">Terrain Gen</a>
+                </div>
+            </div>
+
+
+            <div class="navbar">
+                <a href="https://github.com/jamstimac" title="Respository website for James Stimac" onclick='window.open("https://github.com/jamstimac");return false;'>
                 <img src="media/githubIcon60.png" alt="Github icon" class="hoverable" target="blank" >
-            </a>
+                </a>
+            </div>
 
         </nav>
-        <section >
+
+        <section>
             <h3>
                 Spring Boot Project
             </h3>
